@@ -4,12 +4,19 @@ html {
 	--negative-space: #000;
 	--background: #222;
 	--text: #DEE;
+	--button-fill: #36F;
+	--button-shadow: #006;
+	--button-text: #FFF;
+	--input-fill: #111;
+	--input-shadow: #036;
+	--input-text: #EEE;
 
 	background-color: var(--negative-space);
 	color: var(--text);
 
 	font-family: "Atkinson Hyperlegible", sans-serif;
-	font-size: 112.5%;
+	font-size: 120%;
+	font-variant-numeric: tabular-nums;
 }
 
 .box {
@@ -18,10 +25,81 @@ html {
 	padding: 0.5em;
 }
 
+/* #region Button */
+
+button {
+	font: inherit;
+	outline: none;
+
+	border: none;
+	border-radius: 1em;
+	margin: 0.125em;
+	padding: 0 0.5em;
+
+	background-color: var(--button-fill);
+	box-shadow: 0 0 0 #000 inset, 0 0 1em var(--button-shadow) inset;
+	color: var(--button-text);
+	cursor: pointer;
+
+	transition: 0.1s ease;
+	transition-property: background-color, box-shadow;
+}
+
+button:hover, button:focus {
+	background-color: var(--button-shadow);
+	box-shadow: 0 0 0.2em #000 inset, 0 0 1.875em var(--button-fill) inset;
+}
+
+button:focus-visible {
+	outline: 0.125em solid var(--text);
+}
+
+button:active {
+	background-color: var(--button-fill);
+	box-shadow: 0 0 1em #000 inset, 0 0 0 var(--button-shadow) inset;
+}
+
+/* #endregion */
+
+/* #region Input */
+
+input {
+	appearance: none;
+
+	font: inherit;
+	outline: none;
+
+	border: none;
+	border-radius: 0.25em;
+	margin: 0.125em;
+	padding: 0.25em;
+
+	background-color: var(--input-shadow);
+	box-shadow: 0 0 0.2em #000 inset, 0 0 2em var(--input-fill) inset;
+	color: var(--input-text);
+
+	transition: 0.1s ease;
+	transition-property: background-color, box-shadow;
+}
+
+input:hover, input:focus {
+	background-color: var(--input-fill);
+	box-shadow: 0 0 0.2em #000 inset, 0 0 1.875em var(--input-shadow) inset;
+}
+
+input:focus, input:active {
+	outline: 0.125em solid var(--text);
+}
+
+/* #endregion */
+
 @media (prefers-color-scheme: light) {
 	html {
 		--negative-space: #88F;
 		--background: #DDD;
 		--text: #000;
+		--input-fill: #CCC;
+		--input-shadow: #36F;
+		--input-text: #000;
 	}
 }
