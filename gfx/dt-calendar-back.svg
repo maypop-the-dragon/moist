@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0,0 3 3">
+	<path fill="#CDD" stroke-width="0" d="
+		M 0,1.5 L 2,0 L 2,1 L 3,1 L 3,2 L 2,2 L 2,3 Z
+	" />
+</svg>
