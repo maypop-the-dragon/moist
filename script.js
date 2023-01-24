@@ -45,7 +45,7 @@ class Fluid {
 	constructor(name, hydration, color) {
 		// Set the fluid's properties.
 		this.name = name;
-		this.hydrationFactor = hydration;
+		this.hydration = hydration;
 		this.color = color;
 
 		// Freeze it and add it to the list.
@@ -53,9 +53,23 @@ class Fluid {
 	}
 };
 
+// #region Fluids
+
 Fluid.fallback = new Fluid("unknown", 0.0, "#666");
 
+Fluid.list.push(
+	new Fluid("water", 1.00, "#9CF"),
+	new Fluid("juice", 0.85, "#C03"),
+	new Fluid("soda", 0.9, "#421"),
+	new Fluid("tea", 0.75, "#CC6"),
+	new Fluid("coffee", 0.98, "#963")
+);
+
+// #endregion
+
 class Entry {
+	// TODO: renderToElement
+
 	/**
 	 * @desc Decodes an entry from a 3-character string.
 	 * See the comment for Entry.prototype.encode() for info about the string.
@@ -109,7 +123,7 @@ class Entry {
 	 * @desc An entry in the hydration log.
 	 * @param {number} amount The amount of fluid consumed.
 	 * @param {boolean} isOZ Whether that amount is in ounces.
-	 * @param {number} fluid The fluid's index in Fluid.list.
+	 * @param {Fluid} fluid The fluid consumed.
 	 * @param {number} hour The hour in the day the entry was registered.
 	 * @param {number} minute The minute in the hour the entry was registered.
 	 */
@@ -126,13 +140,55 @@ class Entry {
 	}
 };
 
-// #region Fluids
+class Day {
+	entries = [];
 
-Fluid.list.push(
-	new Fluid("water", 1.00, "#9CF"),
-	new Fluid("juice", 0.85, "#C03"),
-	new Fluid("soda", 0.9, "#421")
-	// TODO: tea and coffee, also account for caffiene
-);
+	// TODO: encode, decode
 
-// #endregion
+	/**
+	 * @desc Adds an entry. The time is set automatically.
+	 * @param {number} amount The amount of fluid consumed.
+	 * @param {boolean} isOZ Whether that amount is in ounces.
+	 * @param {Fluid} fluid The fluid consumed.
+	 * @returns {Entry} The new entry.
+	 */
+	addEntry(amount, isOZ, fluid) {
+		const date = new Date;
+		const entry = new Entry(amount, isOZ, fluid, date.getHours(), date.getMinutes());
+		this.entries.push(entry);
+		this.total += entry.amount * entry.fluid.hydration;
+		return entry;
+	}
+
+	/**
+	 * @desc Renders the graph thing. Sorry, I'm tired.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context.
+	 */
+	renderToCanvas(ctx) {
+		const HEIGHT = ctx.canvas.height, GOAL = Fluid.convertAmount(false, this.isOZ, this.goal);
+		let y = HEIGHT;
+
+		ctx.clearRect(1, 0, 1, HEIGHT);
+
+		for (let i = 0; i < this.entries.length; ++i) {
+			const ENTRY = this.entries[i];
+
+			let size = Fluid.convertAmount(false, ENTRY.isOZ, ENTRY.amount * ENTRY.fluid.hydration) / GOAL * ctx.canvas.height;
+			y -= size;
+
+			ctx.fillStyle = ENTRY.fluid.color;
+			ctx.fillRect(1, y, 1, size);
+		}
+	}
+
+	/**
+	 * @desc All the entries for a whole day.
+	 * @param {number} goal The goal amount.
+	 * @param {boolean} isOZ Whether the goal and amount consumed are in ounces.
+	 */
+	constructor(goal, isOZ) {
+		this.isOZ = Boolean(isOZ);
+		this.goal = Math.max(0, Math.min(6553.5, Math.round(Number(goal) * 10 || 0) / 10));
+		this.total = 0;
+	}
+};
