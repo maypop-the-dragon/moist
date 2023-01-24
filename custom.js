@@ -1,3 +1,3 @@
 'use strict';
 
-// Coming soon..?
+// Fluid.add("water", "#6CF", 1.0);

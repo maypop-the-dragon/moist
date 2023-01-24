@@ -1,78 +1,192 @@
+/**
+ * @desc Converts a fluid amount to either milliliters or ounces.
+ * @param {boolean} toOZ Whether to convert to ounces.
+ * @param {boolean} fromOZ Whether the original amount is in ounces.
+ * @param {number} amount The original amount.
+ * @returns {number} The converted amount.
+ */
+function convertAmount(toOZ, fromOZ, amount) {
+	if (fromOZ && !toOZ)
+		return amount * 29.5735295625;
+	if (!fromOZ && toOZ)
+		return amount * 0.033814022701843;
+	return amount;
+}
+
+/**
+ * @desc Represents a fluid amount as text.
+ * @param {boolean} toOZ Whether to show the amount in ounces.
+ * @param {boolean} fromOZ Whether the amount is already in ounces.
+ * @param {number} amount The amount to represent.
+ * @returns {string} The string representation.
+ */
+function representAmount(toOZ, fromOZ, amount) {
+	let converted = Fluid.convertAmount(toOZ, fromOZ, amount);
+
+	if (toOZ) {
+		converted = Math.round(converted * 10) / 10;
+		return `${converted}${".0".repeat(!(converted % 1))} oz`;
+	}
+
+	return String(Math.round(converted)) + " mL";
+}
+
+
+/**
+ * @desc Represents a time of day as textual.
+ * @param {number} hour The hour of the day.
+ * @param {number} minute The minute of the day.
+ * @param {boolean} useMeridiem Whether to use 12-hour time with am and pm.
+ * @returns {string} The textual representation.
+ */
+function representTime(useMeridiem) {
+	return `${
+		useMeridiem ? hour % 12 || 12 : hour
+	}:${
+		"0".repeat(minute < 10) + String(minute)
+	}${
+		useMeridiem ? (hour < 12 ? "am" : "pm") : ""
+	}`;
+}
+
 class Fluid {
-	static fallback = null;
+	static #secret = Symbol();
 	static list = [];
 
+	/** @desc displayed name */
+	name = "";
+	/** @desc displayed color */
+	color = "#999999";
+	/** @desc water concentration */
+	water = 1.0;
+	/** @desc selectable? */
+	visible = true;
+
+	/** @desc encoded representation */
+	data = "\uE499\u9999";
+
+	/** @desc identifier */
+	index = -1;
+
 	/**
-	 * @desc Converts a fluid amount to either milliliters or ounces.
-	 * @param {boolean} toOZ Whether to convert to ounces.
-	 * @param {boolean} fromOZ Whether the original amount is in ounces.
-	 * @param {number} amount The original amount.
-	 * @returns {number} The converted amount.
+	 * @desc Decode a fluid from a string.
+	 * @param {string} data The string to decode.
+	 * @returns {Fluid} The decoded fluid.
 	 */
-	static convertAmount(toOZ, fromOZ, amount) {
-		if (fromOZ && !toOZ)
-			return amount * 29.5735295625;
-		if (!fromOZ && toOZ)
-			return amount * 0.033814022701843;
-		return amount;
+	static decode(data) {
+		data = String(data);
+
+		const first = data.charCodeAt(0);
+
+		const visible = Boolean(first >> 15);
+		const water = Math.max(0, Math.min(100, first >> 8 & 0b01111111)) / 100;
+
+		const second = data.charCodeAt(1);
+
+		let color = "#";
+		color += "0".repeat(first & 255 < 0x10) + (first & 255).toString(16);
+		color += second.toString(16).padStart(4, "0");
+
+		const name = data.substring(2, 22);
+
+		return new Fluid(name, color, water, visible, Fluid.#secret, data);
 	}
 
 	/**
-	 * @desc Represents a fluid amount as text.
-	 * @param {boolean} toOZ Whether to show the amount in ounces.
-	 * @param {boolean} fromOZ Whether the amount is actually in ounces.
-	 * @param {number} amount The amount to represent.
-	 * @returns {string} The string representation.
+	 * @desc Permanently saves the fluid to the fluid list.
+	 * @returns {number} Its new index in the fluid list.
 	 */
-	static representAmount(toOZ, fromOZ, amount) {
-		let converted = Fluid.convertAmount(toOZ, fromOZ, amount);
+	save() {
+		if (this.index !== -1)
+			return this.index;
 
-		if (toOZ) {
-			converted = Math.round(converted * 10) / 10;
-			return `${converted}${".0".repeat(!(converted % 1))} oz`;
+		const listData = localStorage.getItem("moist:fluids") ?? "";
+		let pos = 0, index = 0;
+		while (pos < listData.length) {
+			const data = listData.substring(pos, listData.indexOf("\u0000", pos + 2));
+
+			if (data === this.data)
+				return index;
+
+			pos += data.length + 1;
+			++index;
 		}
 
-		return String(Math.round(converted)) + " mL";
+		localStorage.setItem("moist:fluids", listData + this.data + "\u0000");
+
+		this.index = Fluid.list.length;
+		Fluid.list.push(this);
+		console.log("added", this);
+
+		return this.index;
 	}
 
 	/**
-	 * @desc A type of fluid.
-	 * @param {string} name The name of the fluid.
-	 * @param {number} hydration A number multiplied by the amount of fluid
-	 * consumed to determine how much water it counts as.
-	 * @param {string} color The fluid's color on the visualization.
+	 * @desc A fluid that the user may drink.
+	 * @param {string} name The fluid's name.
+	 * @param {string} color The fluid's color as a 6-digit hex code (including the # symbol).
+	 * @param {number} water Portion of water in this fluid with two decimal places of precision.
+	 * @param {boolean} visible Whether the fluid is selectable for new entries.
+	 * @param _ Internal argument used to skip normalization and pre-encoding.
+	 * @param $ Internal argument used to provided pre-pre-encoded data.
 	 */
-	constructor(name, hydration, color) {
-		// Set the fluid's properties.
-		this.name = name;
-		this.hydration = hydration;
-		this.color = color;
+	constructor(name = "???", color = "#999999", water = 1.0, visible = true, _, $) {
+		if (_ === Fluid.#secret)
+			this.data = $;
+		else {
+			// The name cannot contain nulls.
+			name = String(name).replaceAll("\u0000", "\uFFFF");
 
-		// Freeze it and add it to the list.
-		Object.freeze(this);
+			// The color must be a lowercase 6-digit hex code.
+			color = String(color);
+			if (!/^#[0-9A-Fa-f]{6}$/.test(color))
+				color = "#999999";
+			else
+				color = color.toLowerCase();
+
+			// The water concentration's gotta be, like, a percent, man.
+			const waterPercent = Math.round(Math.max(100, Math.min(0, (Number(water) || 0) * 100)));
+			water = waterPercent / 100;
+
+			// Simple enough. It's a boolean.
+			visible = Boolean(visible);
+
+			// Pre-encode all this data.
+			this.data = String.fromCharCode(
+				visible << 15 |
+				waterPercent << 8 |
+				parseInt(color.substring(1, 3), 16)
+			) + String.fromCharCode(parseInt(color.substring(3,7), 16)) + name;
+		}
+
+		this.name = name;
+		this.color = color;
+		this.water = water;
+		this.visible = visible;
 	}
 };
 
-// #region Fluids
+// Load all the fluids that were in local storage.
+{
+	const listData = localStorage.getItem("moist:fluids") ?? "";
+	let pos = 0;
+	while (pos < listData.length) {
+		const data = listData.substring(pos, listData.indexOf("\u0000", pos + 2));
 
-Fluid.fallback = new Fluid("unknown", 0.0, "#666");
+		const fluid = Fluid.decode(data);
+		fluid.index = Fluid.list.length;
+		Fluid.list.push(fluid);
 
-Fluid.list.push(
-	new Fluid("water", 1.00, "#9CF"),
-	new Fluid("juice", 0.85, "#C03"),
-	new Fluid("soda", 0.9, "#421"),
-	new Fluid("tea", 0.75, "#CC6"),
-	new Fluid("coffee", 0.98, "#963")
-);
-
-// #endregion
+		pos += data.length + 1;
+	}
+}
 
 class Entry {
 	// TODO: renderToElement
 
 	/**
 	 * @desc Decodes an entry from a 3-character string.
-	 * See the comment for Entry.prototype.encode() for info about the string.
+	 * See the comment on Entry.prototype.encode() for info about the string.
 	 * @param {string} data The string to decode.
 	 * @returns {Entry} The decoded entry.
 	 */
@@ -99,6 +213,7 @@ class Entry {
 	 * 3. the amount times 10
 	 */
 	encode() {
+		this.fluid.save();
 		return String.fromCharCode(this.isOZ << 15 | this.hour << 6 | this.minute)
 			+ String.fromCharCode(Fluid.list.indexOf(this.fluid))
 			+ String.fromCharCode(Math.round(this.amount * 10));
@@ -134,9 +249,6 @@ class Entry {
 		this.fluid = fluid instanceof Fluid ? fluid : Fluid.fallback[0];
 		this.hour = Math.max(0, Math.min(23, Math.floor(Number(hour) || 0)));
 		this.minute = Math.max(0, Math.min(59, Math.floor(Number(minute) || 0)));
-
-		// I froze the object to prevent the user from messing it up.
-		Object.freeze(this);
 	}
 };
 
@@ -146,22 +258,72 @@ class Day {
 	// TODO: encode, decode
 
 	/**
-	 * @desc Adds an entry. The time is set automatically.
+	 * @desc Decodes a day from a string.
+	 * See the comment on Day.prototype.encode() for info about the string.
+	 * @param {string} data The encoded data.
+	 * @returns {Day} The decoded day.
+	 */
+	static decode(data) {
+		const day = new Day(
+			data.charCodeAt(1) / 10,
+			data.charCodeAt(0) >> 15
+		);
+
+		for (let i = 2; i < data.length; i += 3)
+			day.addEntry(Entry.decode(data.substring(i, i + 3)));
+
+		return day;
+	}
+
+	/**
+	 * @desc Encodes the day and its entries into a string.
+	 * @param {*} data The encoded data. It's first 2 characters are:
+	 * 1. the highest bit is whether the amounts are in ounces,
+	 *    and the rest are unused
+	 * 2. the goal water amount times 10
+	 *
+	 * The rest of the string is entry data.
+	 * @returns {string} The encoded data.
+	 */
+	encode() {
+		let data = String.fromCharCode(this.isOZ << 15)
+			+ String.fromCharCode(this.goal)
+			+ String.fromCharCode(this.total);
+
+		for (let i = 0; i < this.entries.length; ++i)
+			data += this.entries[i].encode();
+
+		return data;
+	}
+
+	/**
+	 * @desc Adds an entry.
+	 * @param {Entry} entry The entry.
+	 * @returns {Entry} The entry.
+	 */
+	addEntry(entry) {
+		this.entries.push(entry);
+		this.total += entry.amount * entry.fluid.water;
+		return entry;
+	}
+
+	/**
+	 * @desc Adds a new entry. The time is set automatically.
 	 * @param {number} amount The amount of fluid consumed.
 	 * @param {boolean} isOZ Whether that amount is in ounces.
 	 * @param {Fluid} fluid The fluid consumed.
 	 * @returns {Entry} The new entry.
 	 */
-	addEntry(amount, isOZ, fluid) {
+	addNewEntry(amount, isOZ, fluid) {
 		const date = new Date;
 		const entry = new Entry(amount, isOZ, fluid, date.getHours(), date.getMinutes());
 		this.entries.push(entry);
-		this.total += entry.amount * entry.fluid.hydration;
+		this.total += entry.amount * entry.fluid.water;
 		return entry;
 	}
 
 	/**
-	 * @desc Renders the graph thing. Sorry, I'm tired.
+	 * @desc Renders a color graph thing for this day.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context.
 	 */
 	renderToCanvas(ctx) {
@@ -173,7 +335,7 @@ class Day {
 		for (let i = 0; i < this.entries.length; ++i) {
 			const ENTRY = this.entries[i];
 
-			let size = Fluid.convertAmount(false, ENTRY.isOZ, ENTRY.amount * ENTRY.fluid.hydration) / GOAL * ctx.canvas.height;
+			let size = Fluid.convertAmount(false, ENTRY.isOZ, ENTRY.amount * ENTRY.fluid.water) / GOAL * ctx.canvas.height;
 			y -= size;
 
 			ctx.fillStyle = ENTRY.fluid.color;
