@@ -1,3 +1,5 @@
 'use strict';
 
-// Fluid.add("water", "#6CF", 1.0);
+Fluid.show(
+	// new Fluid("V O I D", "#000000", 000)
+);
