@@ -5,6 +5,20 @@ class Fluid {
 	/** @desc every selectable fluid @type Fluid[] */
 	static shown = Fluid.saved.filter(fluid => fluid.alwaysShown);
 
+	/** @desc this fluid's name @type {string} */
+	name = "???";
+	/** @desc this fluid's color code @type {string} */
+	color = "#999";
+	/** @desc this fluid's hydration factor @type {number} */
+	hydration = 0.0;
+	/** @desc is this fluid permanently selectable? @type {boolean} */
+	alwaysShown = false;
+
+	/** @desc this fluid's storable representation @type {string} */
+	data = "";
+	/** @desc the fluid's saved index (-1 if not saved) @type {number} */
+	index = -1;
+
 	/**
 	 * @desc converts a fluid amount from mL or oz to mL or oz
 	 * @param {number} amount the original amount
@@ -27,7 +41,7 @@ class Fluid {
 	 * @param {boolean} toOZ should the result be in oz?
 	 * @returns {string} the textual reprsentation
 	 */
-	static representAmount(amount, fromOZ, toOZ) {
+	static writeAmount(amount, fromOZ, toOZ) {
 		let converted = Fluid.convertAmount(amount, fromOZ, toOZ);
 
 		if (toOZ) {
@@ -41,25 +55,52 @@ class Fluid {
 		return Math.round(converted) + " mL";
 	}
 
-	/** @desc saves one or more fluids @param {...Fluid} fluids the fluids to save */
-	static save(...fluids) {
-		// TODO
+	/** @desc saves one or more fluids @param {Fluid[]} fluids the fluids to save */
+	static save(fluids) {
+		for (const fluid of fluids) {
+			const twin = Fluid.saved.find(item => item.data === fluid.data);
+
+			if (twin === undefined) {
+				fluid.index = fluids.length;
+				Fluid.saved.push(fluid);
+			} else
+				fluid.index = twin.index;
+		}
+
+		let data = "";
+		for (let i = 0; i < Fluid.saved.length; ++i)
+			data += Fluid.saved[i].data;
+		localStorage.setItem("moist:fluids", data);
 	}
 
 	/**
 	 * @desc makes one or more fluids selectable and saves the "always shown" ones
-	 * @param {...Fluid} fluids the fluids to show
+	 * @param {Fluid[]} fluids the fluids to show
 	 */
-	static show(...fluids) {
-		// TODO
+	static show(fluids) {
+		let toSave = [];
+
+		for (const fluid of fluids) {
+			const twin = Fluid.shown.find(item => item.data === fluid.data);
+
+			if (twin === undefined) {
+				Fluid.shown.push(fluid);
+
+				if (fluid.alwaysShown)
+					toSave.push(fluid);
+			} else
+				fluid.index = twin.index;
+		}
+
+		Fluid.save(toSave);
 	}
 
 	/**
 	 * @desc decodes a fluid from a string
 	 * @param {string} data the string to decode
-	 * 
+	 *
 	 * Shhhhhhh000LLLLL 0000rrrrggggbbbb <name>
-	 * 
+	 *
 	 * - 0: (unused bits)
 	 * - S: alwaysShown
 	 * - h: hydration
@@ -126,9 +167,9 @@ class Fluid {
 
 		// This data is pre-encoded because it's accessed frequently. See Fluid.decode().
 		this.data = String.fromCharCode(
-			alwaysShown << 15
-			| hydration << 8
-			| name.length,
+			(alwaysShown << 15)
+			| (hydration << 8)
+			| (name.length),
 			parseInt(color.substring(1, 4), 16)
 		) + name;
 
@@ -140,18 +181,100 @@ class Fluid {
 };
 
 // Water gets added automatically.
-Fluid.show(new Fluid("Water", "#66CCFF", 100, true));
+Fluid.show([new Fluid("Water", "#6CF", 100, true)]);
 
 /** @desc the class for entries. it has some static methods */
 class Entry {
 	/**
+	 * @desc decodes an entry from a string
+	 * @param {string} data the string to decode
+	 *
+	 * U0000HHHHHmmmmmm aaaaaaaaaaaaaaaa IIIIIIIIIIIIIIII
+	 *
+	 * - 0: (unused bits)
+	 * - U: isOZ
+	 * - H: hour
+	 * - m: minute
+	 * - a: amount * 10
+	 * - I: fluid.index
+	 * @returns {Fluid} the decoded fluid
+	 */
+	static decode(data) {
+		const complicated = data.charCodeAt(0) || 0;
+
+		const isOZ = complicated >> 15;
+		const hour = complicated >> 6 & 31;
+		const minute = complicated & 63;
+		const amount = data.charCodeAt(1) / 10;
+		const fluid = Fluid.saved[data.charCodeAt(2)] ?? Fluid.saved[0];
+
+		return new Entry(fluid, isOZ, amount, hour, minute);
+	}
+
+	/**
+	 * @desc represents a time of day as text
+	 * @param {boolean} useMeridiem use 12-hour time with am and pm?
+	 * @param {number} hour the hour of the day
+	 * @param {number} minute the minute of the hour
+	 * @returns {string} the textual representation
+	 */
+	static writeTime(useMeridiem, hour, minute) {
+		let visualHour = hour;
+		if (useMeridiem)
+			visualHour = hour % 12 || 12;
+
+		let text = String(visualHour) + ":" + String(minute).padStart(2, "0");
+
+		if (useMeridiem)
+			text += hour < 12 ? " am" : " pm";
+
+		return text;
+	}
+
+	/**
 	 * @desc encodes this entry into a string. this is not done in the constructor because encoding
 	 * an entry requires that its fluid is saved, and the fluid should not be saved unless an entry
-	 * using it is saved
+	 * using it is saved. speaking of which, this function also saves the entry's fluid
+	 *
+	 * see Fluid.decode for info on the format
 	 * @returns {string} the encoded data
 	 */
 	encode() {
-		// TODO
+		if (this.fluid.index === -1)
+			Fluid.save(this.fluid);
+
+		return String.fromCharCode(
+			(this.isOZ << 15)
+			| (this.hour & 31 << 6)
+			| (this.minute & 63),
+			this.amount * 10,
+			this.fluid.index
+		);
+	}
+
+	/**
+	 * @desc generates an html element of this entry for the ui
+	 * @param {boolean} toOZ use ounces?
+	 * @param {number} useMeridiem use 12-hour time with am and pm?
+	 * @returns {HTMLTableRowElement} the html element
+	 */
+	generateElement(toOZ, useMeridiem) {
+		const row = document.createElement("TR");
+
+		const time = row.appendChild(document.createElement("TD"));
+		time.id = "time";
+		time.innerText = Entry.writeTime(useMeridiem, this.hour, this.minute);
+
+		const amount = row.appendChild(document.createElement("TD"));
+		amount.id = "amount";
+		amount.innerText = Fluid.writeAmount(this.amount, this.isOZ, toOZ);
+
+		const fluid = row.appendChild(document.createElement("TD"));
+		fluid.id = "fluid";
+		fluid.innerText = this.fluid.name;
+		fluid.style.color = this.fluid.color;
+
+		return row;
 	}
 
 	/**
@@ -159,17 +282,26 @@ class Entry {
 	 * @param {Fluid} fluid the fluid consumed
 	 * @param {boolean} isOZ is the amount in ounces?
 	 * @param {number} amount the amount of fluid consumed
+	 * @param {number} hour the hour the entry was added
+	 * @param {number} minute the minute the entry was added
 	 */
-	constructor(fluid, isOZ, amount) {
+	constructor(fluid, isOZ, amount, hour, minute) {
 		if (!(fluid instanceof Fluid))
 			fluid = Fluid.shown[0];
 		isOZ = Boolean(isOZ);
-		amount = Math.max(0, Math.min(6553.5, Math.round(Number(amount) || 0)));
+		amount = Math.max(0, Math.min(6553.5, Math.round((Number(amount) || 0) * 10) / 10));
+		hour = Math.max(0, Math.min(23, Math.round(Number(hour) || 0)));
+		minute = Math.max(0, Math.min(59, Math.round(Number(minute) || 0)));
 
 		this.fluid = fluid;
 		this.isOZ = isOZ;
 		this.amount = amount;
+		this.hour = hour;
+		this.minute = minute;
 	}
 };
 
-// Just had a thought: how do I deal with the user switching time zones?
+/** @desc the class for a day's log */
+class DailyLog {
+	// TODO
+};
