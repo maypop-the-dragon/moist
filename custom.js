@@ -1,5 +1,5 @@
 'use strict';
 
 Fluid.show([
-	// new Fluid("V O I D", "#000000", 000)
+	// new Fluid("V O I D", "#000", 000)
 ]);

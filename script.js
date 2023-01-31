@@ -113,7 +113,7 @@ class Fluid {
 
 		const complicated = data.charCodeAt(0);
 		const alwaysShown = complicated >> 15;
-		const hydration = Math.min(100, complicated >> 8 & 0b01111111);
+		const hydration = Math.min(100, (complicated >> 8) & 0b01111111);
 
 		const nameLength = complicated & 0b00011111;
 		const name = data.substring(2, 2 + nameLength);
@@ -197,13 +197,13 @@ class Entry {
 	 * - m: minute
 	 * - a: amount * 10
 	 * - I: fluid.index
-	 * @returns {Fluid} the decoded fluid
+	 * @returns {Entry} the decoded entry
 	 */
 	static decode(data) {
 		const complicated = data.charCodeAt(0) || 0;
 
 		const isOZ = complicated >> 15;
-		const hour = complicated >> 6 & 31;
+		const hour = (complicated >> 6) & 31;
 		const minute = complicated & 63;
 		const amount = data.charCodeAt(1) / 10;
 		const fluid = Fluid.saved[data.charCodeAt(2)] ?? Fluid.saved[0];
@@ -236,7 +236,7 @@ class Entry {
 	 * an entry requires that its fluid is saved, and the fluid should not be saved unless an entry
 	 * using it is saved. speaking of which, this function also saves the entry's fluid
 	 *
-	 * see Fluid.decode for info on the format
+	 * see Entry.decode for info on the format
 	 * @returns {string} the encoded data
 	 */
 	encode() {
@@ -245,7 +245,7 @@ class Entry {
 
 		return String.fromCharCode(
 			(this.isOZ << 15)
-			| (this.hour & 31 << 6)
+			| ((this.hour & 31) << 6)
 			| (this.minute & 63),
 			this.amount * 10,
 			this.fluid.index
@@ -301,7 +301,80 @@ class Entry {
 	}
 };
 
-/** @desc the class for a day's log */
+/** @desc the class for a day's log. it has some static methods */
 class DailyLog {
-	// TODO
+	/** @desc the goal amount @type {number} */
+	goal = 0;
+	/** @desc the consumed amount @type {number} */
+	total = 0;
+	/** @desc are the amounts in ounces? @type {boolean} */
+	isOZ = false;
+	/** @desc the day's entries @type {Entry[]} */
+	entries = [];
+
+	/**
+	 * @desc decodes a daily log from a string
+	 * @param {string} data the string to decode
+	 *
+	 * U000000000000000 GGGGGGGGGGGGGGGG <entries>
+	 *
+	 * - 0: (unused bits)
+	 * - U: isOZ
+	 * - G: goal * 10
+	 * @returns {DailyLog} the decoded log
+	 */
+	static decode(data) {
+		const isOZ = data.charCodeAt(0) >> 15;
+		const log = new DailyLog(isOZ, data.charCodeAt(1) / 10);
+
+		for (let i = 2; i < data.length; i += 3) {
+			const entry = Entry.decode(data.substring(i, i + 3));
+			log.total += Fluid.convertAmount(entry.amount, entry.isOZ, log.isOZ) * entry.fluid.hydration;
+			log.entries.push(entry);
+		}
+
+		return log;
+	}
+
+	/**
+	 * @desc encodes the log into a string
+	 *
+	 * see DailyLog.decode for info on the format
+	 * @returns {string} the encoded data
+	 */
+	encode() {
+		let data = String.fromCharCode(this.isOZ << 15, this.goal * 10);
+
+		for (let i = 0; i < this.entries.length; ++i)
+			data += this.entries[i].encode();
+
+		return data;
+	}
+
+	/**
+	 * @desc adds an entry to the list. the time is determined automatically
+	 * @param {Fluid} fluid the fluid consumed
+	 * @param {boolean} isOZ is the amount in ounces?
+	 * @param {number} amount the amount of fluid consumed
+	 * @returns {this} chainable
+	 */
+	register(fluid, isOZ, amount) {
+		const now = new Date;
+		const entry = new Entry(fluid, isOZ, amount, now.getHours(), now.getMinutes());
+
+		this.total += Fluid.convertAmount(entry.amount, entry.isOZ, this.isOZ) * entry.fluid.hydration;
+		this.entries.push(entry);
+
+		return this;
+	}
+
+	/**
+	 * @desc a day's log
+	 * @param {boolean} isOZ is the goal in ounces?
+	 * @param {number} goal the goal amount
+	 */
+	constructor(isOZ, goal) {
+		this.isOZ = Boolean(isOZ);
+		this.goal = Math.max(0, Math.min(6553.5, Math.round((Number(goal) || 0) * 10) / 10));
+	}
 };
