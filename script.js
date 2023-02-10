@@ -41,7 +41,7 @@ class Fluid {
 	 * @param {boolean} toOZ should the result be in oz?
 	 * @returns {string} the textual reprsentation
 	 */
-	static writeAmount(amount, fromOZ, toOZ) {
+	static representAmount(amount, fromOZ, toOZ) {
 		let converted = Fluid.convertAmount(amount, fromOZ, toOZ);
 
 		if (toOZ) {
@@ -49,10 +49,10 @@ class Fluid {
 			if (!number.includes("."))
 				number += ".0";
 
-			return number + " oz";
+			return number + "oz";
 		}
 
-		return Math.round(converted) + " mL";
+		return Math.round(converted) + "mL";
 	}
 
 	/** @desc saves one or more fluids @param {Fluid[]} fluids the fluids to save */
@@ -185,6 +185,17 @@ Fluid.show([new Fluid("Water", "#6CF", 100, true)]);
 
 /** @desc the class for entries. it has some static methods */
 class Entry {
+	/** @desc the fluid consumed @type {Fluid} */
+	fluid = null;
+	/** @desc is the amount in ounces? @type {boolean} */
+	isOZ = false;
+	/** @desc the amount of fluid consumed @type {number} */
+	amount = 0;
+	/** @desc the hour the entry was added @type {number} */
+	hour = 0;
+	/** @desc the minute the entry was added @type {number} */
+	minute = 0;
+
 	/**
 	 * @desc decodes an entry from a string
 	 * @param {string} data the string to decode
@@ -218,7 +229,7 @@ class Entry {
 	 * @param {number} minute the minute of the hour
 	 * @returns {string} the textual representation
 	 */
-	static writeTime(useMeridiem, hour, minute) {
+	static representTime(useMeridiem, hour, minute) {
 		let visualHour = hour;
 		if (useMeridiem)
 			visualHour = hour % 12 || 12;
@@ -226,7 +237,7 @@ class Entry {
 		let text = String(visualHour) + ":" + String(minute).padStart(2, "0");
 
 		if (useMeridiem)
-			text += hour < 12 ? " am" : " pm";
+			text += hour < 12 ? "am" : "pm";
 
 		return text;
 	}
@@ -263,11 +274,11 @@ class Entry {
 
 		const time = row.appendChild(document.createElement("TD"));
 		time.id = "time";
-		time.innerText = Entry.writeTime(useMeridiem, this.hour, this.minute);
+		time.innerText = Entry.representTime(useMeridiem, this.hour, this.minute);
 
 		const amount = row.appendChild(document.createElement("TD"));
 		amount.id = "amount";
-		amount.innerText = Fluid.writeAmount(this.amount, this.isOZ, toOZ);
+		amount.innerText = Fluid.representAmount(this.amount, this.isOZ, toOZ);
 
 		const fluid = row.appendChild(document.createElement("TD"));
 		fluid.id = "fluid";

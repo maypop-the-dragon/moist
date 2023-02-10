@@ -7,8 +7,8 @@ html {
 
 	background-color: var(--backdrop);
 	color: var(--text);
-	font-family: "Atkinson Hyperlegible", sans-serif;
-	font-size: calc(100% + 1vmin);
+	font-family: 'Atkinson Hyperlegible', sans-serif;
+	font-size: calc(92.5% + 1vmin);
 
 	overflow: hidden;
 }

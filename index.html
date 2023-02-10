@@ -16,6 +16,48 @@
 		<script defer src="custom.js"></script>
 	</head>
 	<body>
-		How should I deal with the user changing time zones?
+		<div id="main-gui">
+			<div id="log-pane">
+				<button id="log-add">
+					<picture>
+						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-log-add.svg">
+						<img width="12" height="12" src="gfx/dt-log-add.svg" alt="add entry">
+					</picture>
+				</button>
+				<div id="log-container">
+					<table id="log">
+						<tbody>
+							<tr>
+								<td id="time">6553.5oz</td>
+								<td id="water">water</td>
+								<td id="time">00:00am</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div id="calendar-pane">
+				<div id="header">
+					<button class="button" id="back">
+						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-calendar-back.svg">
+						<img width="12" height="12" src="gfx/dt-calendar-back.svg" alt="last month">
+					</button>
+					<h2>septembruary</h2>
+					<button class="button" id="now">
+						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-calendar-now.svg">
+						<img width="12" height="12" src="gfx/dt-calendar-now.svg" alt="current month">
+					</button>
+					<button class="button" id="next">
+						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-calendar-next.svg">
+						<img width="12" height="12" src="gfx/dt-calendar-next.svg" alt="next month">
+					</button>
+				</div>
+				<div id="days">
+					<button class="day">1</button>
+					<button class="day">2</button>
+					<button class="day">3</button>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
