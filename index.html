@@ -17,49 +17,115 @@
 	</head>
 	<body>
 		<div id="main-gui">
+			<div id="calendar-pane">
+				<div id="calendar-header">
+					<button class="button" id="calendar-back" title="last month">
+						<picture>
+							<source media="(prefers-color-scheme: light)" srcset="gfx-l/calendar-back.svg">
+							<img width="12" height="12" src="gfx-d/calendar-back.svg" alt="to last month">
+						</picture>
+					</button>
+					<span id="calendar-month">septembruary 2088</span>
+					<button class="button" id="calendar-now" title="to current month">
+						<picture>
+							<source media="(prefers-color-scheme: light)" srcset="gfx-l/calendar-now.svg">
+							<img width="12" height="12" src="gfx-d/calendar-now.svg" alt="to current month">
+						</picture>
+					</button>
+					<button class="button" id="calendar-next" title="to next month">
+						<picture>
+							<source media="(prefers-color-scheme: light)" srcset="gfx-l/calendar-next.svg">
+							<img width="12" height="12" src="gfx-d/calendar-next.svg" alt="to next month">
+						</picture>
+					</button>
+					<div id="calendar-days"></div>
+				</div>
+			</div>
 			<div id="log-pane">
-				<button id="log-add">
+				<button id="log-add" title="add an entry">
 					<picture>
-						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-log-add.svg">
-						<img width="12" height="12" src="gfx/dt-log-add.svg" alt="add entry">
+						<source media="(prefers-color-scheme: light" srcset="gfx-l/log-add.svg">
+						<img width="12" height="12" src="gfx-d/log-add.svg" alt="add an entry">
 					</picture>
 				</button>
 				<div id="log-container">
-					<p id="log-goal">
-						<span id="consumed">0</span>/<span id="goal">69 oz</span>
+					<p id="log-overview">
+						<span id="consumed">0</span><span id="slash">/</span><span id="goal">69mL</span>
 					</p>
 					<table id="log-entries">
 						<tbody>
 							<tr>
-								<td id="time">6553.5oz</td>
-								<td id="water">water</td>
+								<td id="amount">6553.5oz</td>
+								<td id="fluid">water</td>
 								<td id="time">00:00am</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
+				<button class="button" id="prefs-open" title="edit preferences">
+					<picture>
+						<source media="(prefers-color-scheme: light)" srcset="gfx-l/prefs-open.svg">
+						<img width="12" height="12" src="gfx-d/prefs-open.svg" alt="edit preferences">
+					<picture>
+				</button>
+				<button class="button" id="calendar-open" title="open calendar">
+					<picture>
+						<source media="(prefers-color-scheme: light)" srcset="gfx-l/calendar-open.svg">
+						<img width="12" height="12" src="gfx-d/calendar-open.svg" alt="open calendar">
+					</picture>
+				</button>
 			</div>
-			<div id="calendar-pane">
-				<div id="header">
-					<button class="button" id="back">
-						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-calendar-back.svg">
-						<img width="12" height="12" src="gfx/dt-calendar-back.svg" alt="last month">
+		</div>
+		<div id="sub-gui">
+			<div id="entry-pane">
+				<h2>add entry</h2>
+				<label>
+					<input type="number" size="7" min="0" max="6553" step="1" value="0" autocomplete="off"><span id="entry-unit">mL</span>
+				</label>
+				<label>
+					of
+					<select id="entry-fluid" autocomplete="off"></select>
+				</label>
+				<div id="entry-options">
+					<button class="button" id="entry-cancel" title="discard the entry">
+						<picture>
+							<source media="(prefers-color-scheme: light" srcset="gfx-l/choice-no.svg">
+							<img width="12" height="12" src="gfx-d/choice-no.svg" alt="discard the entry">
+						</picture>
 					</button>
-					<h2>septembruary</h2>
-					<button class="button" id="now">
-						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-calendar-now.svg">
-						<img width="12" height="12" src="gfx/dt-calendar-now.svg" alt="current month">
-					</button>
-					<button class="button" id="next">
-						<source source media="(prefers-color-scheme: light)" srcset="gfx/lt-calendar-next.svg">
-						<img width="12" height="12" src="gfx/dt-calendar-next.svg" alt="next month">
+					<button class="button" id="entry-confirm" title="add the entry">
+						<picture>
+							<source media="(prefers-color-scheme: light" srcset="gfx-l/choice-yes.svg">
+							<img width="12" height="12" src="gfx-d/choice-yes.svg" alt="add the entry">
+						</picture>
 					</button>
 				</div>
-				<div id="days">
-					<button class="day">1</button>
-					<button class="day">2</button>
-					<button class="day">3</button>
-				</div>
+			</div>
+			<div id="prefs-pane">
+				<h2>preferences</h2>
+				<label>
+					unit:
+					<select autocomplete="off">
+						<option value="false">milliliters</option>
+						<option value="true">ounces</option>
+					</select>
+				</label>
+				<br>
+				<button class="button" id="prefs-done" title="finish editing">
+					<picture>
+						<source media="(prefers-color-scheme: light" srcset="gfx-l/choice-yes.svg">
+						<img width="12" height="12" src="gfx-d/choice-yes.svg" alt="finish editing">
+					</picture>
+				</button>
+			</div>
+			<div hidden id="notif-pane">
+				<div id="notif-container"></div>
+				<button class="button" id="notif-close" title="dismiss notifications">
+					<picture>
+						<source media="(prefers-color-scheme: light" srcset="gfx-l/choice-yes.svg">
+						<img width="12" height="12" src="gfx-d/choice-yes.svg" alt="dismiss notifications">
+					</picture>
+				</button>
 			</div>
 		</div>
 	</body>
