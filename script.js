@@ -389,3 +389,17 @@ class DailyLog {
 		this.goal = Math.max(0, Math.min(6553.5, Math.round((Number(goal) || 0) * 10) / 10));
 	}
 };
+
+/**
+ * @desc gets the number of days in a month
+ * @param {month} the month (0-indexed, like Date)
+ * @param {year} the year (to acconut for leap years)
+ * @returns {number} the number of days
+ */
+function getMonthLength(month, year) {
+	return new Date(year, month + 1, 0).getDate();
+}
+
+const elCalendarDays = document.getElementById("calendar-days");
+function populateCalendar(month, year) {
+}

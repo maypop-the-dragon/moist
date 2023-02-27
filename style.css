@@ -14,35 +14,3 @@ html {
 
 	scrollbar-color: #AAD #0000;
 }
-
-#log-goal {
-	text-align: center;
-}
-#log-pane {
-	position: fixed;
-	bottom: 0;
-	left: 0;
-	top: 0;
-	width: 16.5em;
-}
-#log-container {
-	border: 0.125em solid #DDF;
-	border-radius: 0.125em;
-	padding: 0.5em;
-
-	overflow-y: scroll;
-
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	top: 2.5em;
-}
-
-#calendar-pane {
-	position: fixed;
-	bottom: 0;
-	left: 17em;
-	right: 0;
-	top: 0;
-}
