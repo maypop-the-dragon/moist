@@ -38,6 +38,15 @@
 							<img width="12" height="12" src="gfx-d/calendar-next.svg" alt="to next month">
 						</picture>
 					</button>
+					<div id="calendar-weekdays">
+						<span>Mo</span>
+						<span>Ts</span>
+						<span>We</span>
+						<span>Th</span>
+						<span>Fr</span>
+						<span>Sn</span>
+						<span>St</span>
+					</div>
 					<div id="calendar-days"></div>
 				</div>
 			</div>
@@ -80,7 +89,7 @@
 			<div id="entry-pane">
 				<h2>add entry</h2>
 				<label>
-					<input type="number" size="7" min="0" max="6553" step="1" value="0" autocomplete="off"><span id="entry-unit">mL</span>
+					<input id="entry-amount" type="number" size="7" min="0" max="6553" step="1" value="0" autocomplete="off"><span id="entry-unit">mL</span>
 				</label>
 				<label>
 					of

@@ -3,7 +3,7 @@
 html {
 	--backdrop: #000;
 	--fill: #333;
-	--text: #DDF;
+	--text: #FEC;
 
 	background-color: var(--backdrop);
 	color: var(--text);

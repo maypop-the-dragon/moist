@@ -1,3 +1,17 @@
+'use strict';
+
+// #region Elements
+
+// I do not want to type this a million times.
+const getEl = document.getElementById.bind(document);
+
+const entryInputAmount = getEl("entry-amount");
+const entryInputFluid = getEl("entry-fluid");
+const entryTextUnit = getEl("entry-unit");
+
+// #endregion
+// #region Prolific Objects
+
 /** @desc the class for fluids. it has some static methods */
 class Fluid {
 	/** @desc every saved fluid @type Fluid[] */
@@ -180,7 +194,7 @@ class Fluid {
 	}
 };
 
-// Water gets added automatically.
+// Add water automatically.
 Fluid.show([new Fluid("Water", "#6CF", 100, true)]);
 
 /** @desc the class for entries. it has some static methods */
@@ -390,16 +404,63 @@ class DailyLog {
 	}
 };
 
-/**
- * @desc gets the number of days in a month
- * @param {month} the month (0-indexed, like Date)
- * @param {year} the year (to acconut for leap years)
- * @returns {number} the number of days
- */
-function getMonthLength(month, year) {
-	return new Date(year, month + 1, 0).getDate();
-}
+/** @desc an object that stores user preferences */
+const prefs = {
+	/** @desc whether the user prefers ounces over milliliters */
+	"useOZ": navigator.language.endsWith("-US"),
 
-const elCalendarDays = document.getElementById("calendar-days");
-function populateCalendar(month, year) {
+	/**
+	 * @desc decodes a string and writes those preferences to this object
+	 *
+	 * 000000000000000U
+	 * - 0: (unused bits)
+	 * - U: useOZ
+	 * @returns {this} (chainable)
+	 */
+	decode(data) {
+		if (data === null)
+			return this;
+
+		this.useOZ = Boolean(data.charCodeAt(0) & 1);
+
+		return this;
+	},
+
+	/**
+	 * @desc decodes a string and writes those preferences to this object
+	 *
+	 * see prefs.encode for info on the format
+	 * @returns {string} the encoded data
+	 */
+	encode() {
+		return String.fromCharCode(this.useOZ & 1);
+	},
+
+	/**
+	 * @desc applies the options that cause other changes
+	 * @returns {this} (chainable)
+	 */
+	apply() {
+		if (this.useOZ) {
+			entryInputAmount.step = 0.1;
+			entryTextUnit.innerText = "oz";
+		} else {
+			entryInputAmount.step = 1;
+			entryTextUnit.innerText = "mL";
+		}
+		// TODO: render log, since it has units in it as well
+
+		return this;
+	}
+};
+
+prefs.decode(localStorage.getItem("moist:prefs")).apply();
+
+// #endregion
+
+for (let i = 0; i < Fluid.shown.length; ++i) {
+	const option = document.createElement("OPTION");
+	option.value = i;
+	option.innerText = Fluid.shown[i].name;
+	entryInputFluid.appendChild(option);
 }
