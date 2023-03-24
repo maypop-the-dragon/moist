@@ -1,16 +1,123 @@
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-
 html {
-	--backdrop: #000;
-	--fill: #333;
-	--text: #FEC;
+	font-family: sans-serif;
+	font-size: calc(95% + 0.5vmin);
+}
 
-	background-color: var(--backdrop);
-	color: var(--text);
-	font-family: 'Atkinson Hyperlegible', sans-serif;
-	font-size: calc(92.5% + 1vmin);
+body {
+	color: #FEC;
+	background-color: #000;
+	user-select: none;
+}
 
-	overflow: hidden;
+.button {
+	appearance: none;
+	background: #000;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+	vertical-align: middle;
 
-	scrollbar-color: #AAD #0000;
+	position: relative;
+
+	height: 1.25em;
+	padding: 0;
+	min-width: 1.25em;
+}
+.button > img {
+	display: block;
+	pointer-events: none;
+
+	height: 1em;
+	width: 1em;
+
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
+.button::before {
+	content: " ";
+	border: 0.0625em solid;
+	border-radius: 0.125em;
+
+	pointer-events: none;
+
+	position: absolute;
+	bottom: -2.5%;
+	left: -2.5%;
+	right: -2.5%;
+	top: -2.5%;
+
+	transition: 0.5s ease;
+	transition-property: transform, border-radius, background-color;
+}
+.button:hover::before, button:active::before {
+	border-radius: 100%;
+	transform: rotate(45deg);
+}
+.button:active::before {
+	background-color: #FEC2;
+
+	bottom: 5%;
+	left: 5%;
+	right: 5%;
+	top: 5%;
+
+	transition: 0.0625s linear;
+	transition-property: transform, border-radius, background-color;
+}
+.button.no {
+	color: #FA9;
+}
+.button.no:active::before {
+	background-color: #FA92;
+}
+.button.yes {
+	color: #CF9;
+}
+.button.yes:active::before {
+	background-color: #CF92;
+}
+
+#container-switchers {
+	font-size: 2.5em;
+
+	position: fixed;
+	bottom: 0.25em;
+	right: 0.25em;
+}
+#button-calendar {
+	display: none;
+}
+
+.pane {
+	display: none;
+
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	top: 0;
+}
+.pane.active {
+	display: block;
+}
+@media (max-width: 32em) or (max-height: 16em) {
+	.subpane {
+		display: none;
+
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		top: 0;
+	}
+	.subpane.active {
+		display: block;
+	}
+
+	#button-calendar {
+		display: inline-block;
+	}
 }

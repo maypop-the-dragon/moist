@@ -2,12 +2,24 @@
 
 // #region Elements
 
-// I do not want to type this a million times.
+/** @desc alias for `document.getElementById` @type {Function} */
 const getEl = document.getElementById.bind(document);
 
+const containerMain = getEl("container-main");
+const paneLog = getEl("pane-log");
+const paneNotifs = getEl("pane-notifs");
+
+const paneEntry = getEl("pane-entry");
 const entryInputAmount = getEl("entry-amount");
 const entryInputFluid = getEl("entry-fluid");
 const entryTextUnit = getEl("entry-unit");
+
+const panePrefs = getEl("pane-prefs");
+const buttonPrefs = getEl("button-prefs");
+const buttonPrefsClose = getEl("button-prefs-close");
+
+const paneCalendar = getEl("pane-calendar");
+const buttonCalendar = getEl("button-calendar");
 
 // #endregion
 // #region Prolific Objects
@@ -34,7 +46,7 @@ class Fluid {
 	index = -1;
 
 	/**
-	 * @desc converts a fluid amount from mL or oz to mL or oz
+	 * @desc convert a fluid amount from mL or oz to mL or oz
 	 * @param {number} amount the original amount
 	 * @param {boolean} fromOZ is the original amount in oz?
 	 * @param {boolean} toOZ should the result be in oz?
@@ -49,7 +61,7 @@ class Fluid {
 	}
 
 	/**
-	 * @desc represents a fluid amount as text
+	 * @desc represent a fluid amount as text
 	 * @param {number} amount the original amount
 	 * @param {boolean} fromOZ is the original amount in oz?
 	 * @param {boolean} toOZ should the result be in oz?
@@ -69,7 +81,7 @@ class Fluid {
 		return Math.round(converted) + "mL";
 	}
 
-	/** @desc saves one or more fluids @param {Fluid[]} fluids the fluids to save */
+	/** @desc save one or more fluids @param {Fluid[]} fluids the fluids to save */
 	static save(fluids) {
 		for (const fluid of fluids) {
 			const twin = Fluid.saved.find(item => item.data === fluid.data);
@@ -88,7 +100,7 @@ class Fluid {
 	}
 
 	/**
-	 * @desc makes one or more fluids selectable and saves the "always shown" ones
+	 * @desc make one or more fluids selectable and saves the "always shown" ones
 	 * @param {Fluid[]} fluids the fluids to show
 	 */
 	static show(fluids) {
@@ -110,7 +122,7 @@ class Fluid {
 	}
 
 	/**
-	 * @desc decodes a fluid from a string
+	 * @desc decode a fluid from a string
 	 * @param {string} data the string to decode
 	 *
 	 * Shhhhhhh000LLLLL 0000rrrrggggbbbb <name>
@@ -136,7 +148,7 @@ class Fluid {
 	}
 
 	/**
-	 * @desc decodes an array of fluids from a string
+	 * @desc decode an array of fluids from a string
 	 * @param {string | null} data the string to decode (data for several fluids concatenated)
 	 * @returns {Fluid[]} the decoded fluids
 	 */
@@ -211,7 +223,7 @@ class Entry {
 	minute = 0;
 
 	/**
-	 * @desc decodes an entry from a string
+	 * @desc decode an entry from a string
 	 * @param {string} data the string to decode
 	 *
 	 * U0000HHHHHmmmmmm aaaaaaaaaaaaaaaa IIIIIIIIIIIIIIII
@@ -237,7 +249,7 @@ class Entry {
 	}
 
 	/**
-	 * @desc represents a time of day as text
+	 * @desc represent a time of day as text
 	 * @param {boolean} useMeridiem use 12-hour time with am and pm?
 	 * @param {number} hour the hour of the day
 	 * @param {number} minute the minute of the hour
@@ -257,7 +269,7 @@ class Entry {
 	}
 
 	/**
-	 * @desc encodes this entry into a string. this is not done in the constructor because encoding
+	 * @desc encode this entry into a string. this is not done in the constructor because encoding
 	 * an entry requires that its fluid is saved, and the fluid should not be saved unless an entry
 	 * using it is saved. speaking of which, this function also saves the entry's fluid
 	 *
@@ -278,7 +290,7 @@ class Entry {
 	}
 
 	/**
-	 * @desc generates an html element of this entry for the ui
+	 * @desc generate an html element of this entry for the ui
 	 * @param {boolean} toOZ use ounces?
 	 * @param {number} useMeridiem use 12-hour time with am and pm?
 	 * @returns {HTMLTableRowElement} the html element
@@ -410,7 +422,7 @@ const prefs = {
 	"useOZ": navigator.language.endsWith("-US"),
 
 	/**
-	 * @desc decodes a string and writes those preferences to this object
+	 * @desc decode a string and writes those preferences to this object
 	 *
 	 * 000000000000000U
 	 * - 0: (unused bits)
@@ -427,7 +439,7 @@ const prefs = {
 	},
 
 	/**
-	 * @desc decodes a string and writes those preferences to this object
+	 * @desc decode a string and writes those preferences to this object
 	 *
 	 * see prefs.encode for info on the format
 	 * @returns {string} the encoded data
@@ -437,7 +449,7 @@ const prefs = {
 	},
 
 	/**
-	 * @desc applies the options that cause other changes
+	 * @desc apply the options that cause other changes
 	 * @returns {this} (chainable)
 	 */
 	apply() {
@@ -464,3 +476,32 @@ for (let i = 0; i < Fluid.shown.length; ++i) {
 	option.innerText = Fluid.shown[i].name;
 	entryInputFluid.appendChild(option);
 }
+
+/** @desc the currently active pane @type {Element} */
+let activePane = paneLog;
+/** @desc the most recently active pane that is not active anymore @type {Element} */
+let previouslyActivePane = paneLog;
+/**
+ * @desc change the active pane
+ * @param {Element} pane the pane to change to
+ */
+function switchPane(pane) {
+	if (pane === activePane)
+		return;
+
+	if (activePane.classList.contains("subpane"))
+		containerMain.classList.remove("active");
+
+	activePane.classList.remove("active");
+
+	if (pane.classList.contains("subpane"))
+		containerMain.classList.add("active");
+	pane.classList.add("active");
+
+	previouslyActivePane = activePane;
+	activePane = pane;
+}
+
+buttonPrefs.addEventListener("click", () => switchPane(panePrefs));
+buttonCalendar.addEventListener("click", () => switchPane(paneCalendar));
+buttonPrefsClose.addEventListener("click", () => switchPane(previouslyActivePane));
