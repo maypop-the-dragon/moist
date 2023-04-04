@@ -103,7 +103,28 @@ body {
 .pane.active {
 	display: block;
 }
-@media (max-width: 32em) or (max-height: 16em) {
+
+#container-main {
+	display: flex;
+	flex-direction: row;
+}
+#pane-calendar {
+	flex-grow: 1;
+	flex-shrink: 1;
+}
+#log-column {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+#pane-log {
+	flex-grow: 1;
+	min-width: 12em;
+	width: 40vw;
+	max-width: 25vh;
+}
+
+@media (max-width: 36em) or (max-height: 16em) {
 	.subpane {
 		display: none;
 
@@ -120,4 +141,9 @@ body {
 	#button-calendar {
 		display: inline-block;
 	}
+}
+
+#calendar-heading {
+	font-size: 150%;
+	text-align: center;
 }
