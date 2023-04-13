@@ -1,29 +1,5 @@
 'use strict';
 
-// #region Elements
-
-/** @desc alias for `document.getElementById` @type {Function} */
-const getEl = document.getElementById.bind(document);
-
-const containerMain = getEl("container-main");
-const paneLog = getEl("pane-log");
-const paneNotifs = getEl("pane-notifs");
-
-const paneEntry = getEl("pane-entry");
-const entryInputAmount = getEl("entry-amount");
-const entryInputFluid = getEl("entry-fluid");
-const entryTextUnit = getEl("entry-unit");
-
-const panePrefs = getEl("pane-prefs");
-const buttonPrefs = getEl("button-prefs");
-const buttonPrefsClose = getEl("button-prefs-close");
-
-const paneCalendar = getEl("pane-calendar");
-const buttonCalendar = getEl("button-calendar");
-
-// #endregion
-// #region Prolific Objects
-
 /** @desc the class for fluids. it has some static methods */
 class Fluid {
 	/** @desc every saved fluid @type Fluid[] */
@@ -125,7 +101,7 @@ class Fluid {
 	 * @desc decode a fluid from a string
 	 * @param {string} data the string to decode
 	 *
-	 * Shhhhhhh000LLLLL 0000rrrrggggbbbb <name>
+	 * `Shhhhhhh000LLLLL 0000rrrrggggbbbb [name]`
 	 *
 	 * - 0: (unused bits)
 	 * - S: alwaysShown
@@ -226,7 +202,7 @@ class Entry {
 	 * @desc decode an entry from a string
 	 * @param {string} data the string to decode
 	 *
-	 * U0000HHHHHmmmmmm aaaaaaaaaaaaaaaa IIIIIIIIIIIIIIII
+	 * `U0000HHHHHmmmmmm aaaaaaaaaaaaaaaa IIIIIIIIIIIIIIII`
 	 *
 	 * - 0: (unused bits)
 	 * - U: isOZ
@@ -273,7 +249,7 @@ class Entry {
 	 * an entry requires that its fluid is saved, and the fluid should not be saved unless an entry
 	 * using it is saved. speaking of which, this function also saves the entry's fluid
 	 *
-	 * see Entry.decode for info on the format
+	 * see `Entry.decode` for info on the format
 	 * @returns {string} the encoded data
 	 */
 	encode() {
@@ -353,7 +329,7 @@ class DailyLog {
 	 * @desc decodes a daily log from a string
 	 * @param {string} data the string to decode
 	 *
-	 * U000000000000000 GGGGGGGGGGGGGGGG <entries>
+	 * `U000000000000000 GGGGGGGGGGGGGGGG [entries]`
 	 *
 	 * - 0: (unused bits)
 	 * - U: isOZ
@@ -376,7 +352,7 @@ class DailyLog {
 	/**
 	 * @desc encodes the log into a string
 	 *
-	 * see DailyLog.decode for info on the format
+	 * see `DailyLog.decode` for info on the format
 	 * @returns {string} the encoded data
 	 */
 	encode() {
@@ -415,93 +391,3 @@ class DailyLog {
 		this.goal = Math.max(0, Math.min(6553.5, Math.round((Number(goal) || 0) * 10) / 10));
 	}
 };
-
-/** @desc an object that stores user preferences */
-const prefs = {
-	/** @desc whether the user prefers ounces over milliliters */
-	"useOZ": navigator.language.endsWith("-US"),
-
-	/**
-	 * @desc decode a string and writes those preferences to this object
-	 *
-	 * 000000000000000U
-	 * - 0: (unused bits)
-	 * - U: useOZ
-	 * @returns {this} (chainable)
-	 */
-	decode(data) {
-		if (data === null)
-			return this;
-
-		this.useOZ = Boolean(data.charCodeAt(0) & 1);
-
-		return this;
-	},
-
-	/**
-	 * @desc decode a string and writes those preferences to this object
-	 *
-	 * see prefs.encode for info on the format
-	 * @returns {string} the encoded data
-	 */
-	encode() {
-		return String.fromCharCode(this.useOZ & 1);
-	},
-
-	/**
-	 * @desc apply the options that cause other changes
-	 * @returns {this} (chainable)
-	 */
-	apply() {
-		if (this.useOZ) {
-			entryInputAmount.step = 0.1;
-			entryTextUnit.innerText = "oz";
-		} else {
-			entryInputAmount.step = 1;
-			entryTextUnit.innerText = "mL";
-		}
-		// TODO: render log, since it has units in it as well
-
-		return this;
-	}
-};
-
-prefs.decode(localStorage.getItem("moist:prefs")).apply();
-
-// #endregion
-
-for (let i = 0; i < Fluid.shown.length; ++i) {
-	const option = document.createElement("OPTION");
-	option.value = i;
-	option.innerText = Fluid.shown[i].name;
-	entryInputFluid.appendChild(option);
-}
-
-/** @desc the currently active pane @type {Element} */
-let activePane = paneLog;
-/** @desc the most recently active pane that is not active anymore @type {Element} */
-let previouslyActivePane = paneLog;
-/**
- * @desc change the active pane
- * @param {Element} pane the pane to change to
- */
-function switchPane(pane) {
-	if (pane === activePane)
-		return;
-
-	if (activePane.classList.contains("subpane"))
-		containerMain.classList.remove("active");
-
-	activePane.classList.remove("active");
-
-	if (pane.classList.contains("subpane"))
-		containerMain.classList.add("active");
-	pane.classList.add("active");
-
-	previouslyActivePane = activePane;
-	activePane = pane;
-}
-
-buttonPrefs.addEventListener("click", () => switchPane(panePrefs));
-buttonCalendar.addEventListener("click", () => switchPane(paneCalendar));
-buttonPrefsClose.addEventListener("click", () => switchPane(previouslyActivePane));

@@ -12,92 +12,53 @@
 
 		<title>achieve moist™</title>
 		<link rel="stylesheet" href="style.css">
-		<script defer src="script.js"></script>
-		<script defer src="custom.js"></script>
+		<script defer src="classes.js"></script>
+		<script defer src="functionality.js"></script>
+		<script defer src="stuff.js"></script>
 	</head>
 	<body>
-		<div id="container-main" class="pane active">
-			<div id="log-column">
-				<div id="pane-log" class="subpane active">
-					LOG HERE
-					<div id="container-switchers">
-						<button id="button-calendar" class="button" title="open calendar">
-							<img alt="calendar" src="gfx/calendar-open.svg">
+		<div id="pane-main" class="pane">
+			<div id="column-log-entry">
+				<div id="pane-log" class="subpane">
+				</div>
+				<div id="pane-entry" class="subpane">
+					<div>
+						<label>
+							<input id="input-entry-amount" type="number" min="0" max="6000" size="8">&nbsp;<span id="text-entry-unit">oz</span>
+						</label>
+						<label>
+							of&nbsp;<select id="input-entry-fluid"></select>
+						</label>
+						<br>
+						<button id="button-entry-add" class="button" disabled title="add this entry">
+							<img alt="add" src="gfx/choice-yes.svg" width="12">
 						</button>
-						<button id="button-prefs" class="button" title="edit preferences">
-							<img alt="prefs" src="gfx/prefs-open.svg">
+						<button id="button-entry-cancel" class="button" title="cancel">
+							<img alt="cancel" src="gfx/choice-no.svg" width="12">
 						</button>
 					</div>
 				</div>
-				<div id="pane-entry" class="subpane">
-					<label for="entry-amount">
-						<input id="entry-amount" type="number" min="0" max="6553.5" step="0.5" size="9">
-						<span id="entry-unit">Hz</span>
-					</label>
-					of <select id="entry-fluid"></select>
-					<br>
-					<button id="button-entry-confirm" class="button" title="add this entry">
-						<img alt="calendar" src="gfx/choice-yes.svg">
-					</button>
-				</div>
 			</div>
 			<div id="pane-calendar" class="subpane">
-				<div id="calendar-heading">
-					<button id="button-calendar-back" class="button" title="to previous month">
-						<img alt="previous" src="gfx/calendar-back.svg">
-					</button>
-					<span id="text-calendar-month">its_spooky_month</span>
-					<button id="button-calendar-next" class="button" title="to next month">
-						<img alt="next" src="gfx/calendar-next.svg">
-					</button>
-					<button id="button-calendar-now" class="button" title="to the present">
-						<img alt="now" src="gfx/calendar-now.svg">
-					</button>
+				<div id="header-calendar">
+					<div>
+						<button id="button-calendar-back" class="button" title="go back a month">
+							<img alt="back" src="gfx/calendar-back.svg" width="12">
+						</button>
+					</div>
+					<span id="text-calendar-month">junetembruary '77</span>
+					<div>
+						<button id="button-calendar-back" class="button" title="go to the current month">
+							<img alt="now" src="gfx/calendar-now.svg" width="12">
+						</button>
+						<button id="button-calendar-back" class="button" title="go forward a month">
+							<img alt="next" src="gfx/calendar-next.svg" width="12">
+						</button>
+					</div>
 				</div>
-				<div id="calendar-days">
-					<button>1</button>
-					<button>2</button>
-					<button>3</button>
-					<button>4</button>
-					<button>5</button>
-					<button>6</button>
-					<button>7</button>
-					<button>8</button>
-					<button>9</button>
-					<button>10</button>
-					<button>11</button>
-					<button>12</button>
-					<button>13</button>
-					<button>14</button>
-					<button>15</button>
-					<button>16</button>
-					<button>17</button>
-					<button>18</button>
-					<button>19</button>
-					<button>20</button>
-					<button>21</button>
-					<button>22</button>
-					<button>23</button>
-					<button>24</button>
-					<button>25</button>
-					<button>26</button>
-					<button>27</button>
-					<button>28</button>
-					<button>29</button>
-					<button>30</button>
-					<button>31</button>
-				</div>
+				<div id="content-calendar"></div>
 			</div>
 		</div>
-		<div id="pane-prefs" class="pane">
-			PREFERENCES HERE
-			<br>
-			<button id="button-prefs-close" class="button yes" title="done">
-				<img alt="done" src="gfx/choice-yes.svg">
-			</button>
-		</div>
-		<div id="pane-notifs" class="pane">
-			NOTIFICATIONS HERE
-		</div>
+		<div id="pane-prefs" class="pane">Preferences</div>
 	</body>
 </html>

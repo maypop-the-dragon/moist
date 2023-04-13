@@ -12,10 +12,11 @@ not exactly the best thing to use long-term since it uses `localStorage` which
 has a somewhat small limit but I'll try to store information as efficiently as
 possible! It's all static files, so you should be able to just download it,
 extract the .ZIP, and open it in your browser. However, if you want to host it
-on a server for several users, the `custom.js` file is explicitly meant for you
+on a server for several users, the `stuff.js` file is explicitly meant for you
 to put announcements and stuff in, just to make things a bit more personal! Am
 I being too sentimental? I think it's the music I'm listening to.
 
 ## Credits
 
 - programming: [me](https://github.com/Blaineworld)
+- ui design: [me](https://github.com/Blaineworld)
