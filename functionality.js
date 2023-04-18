@@ -15,6 +15,7 @@ const buttonEntryAdd = gel("button-entry-add");
 const buttonEntryCancel = gel("button-entry-cancel");
 
 const paneLog = gel("pane-log");
+const buttonLogAdd = gel("button-log-add");
 
 const panePrefs = gel("pane-prefs");
 
@@ -116,6 +117,14 @@ const prefs = {
 };
 
 //#endregion
+//#region Log Pane
+
+buttonLogAdd.addEventListener("click", () => {
+	activatePane(paneEntry);
+	inputEntryAmount.focus();
+});
+
+//#endregion
 //#region Entry Pane
 
 // Populate the fluid dropdown
@@ -127,7 +136,12 @@ for (let i = 0; i < Fluid.shown.length; ++i) {
 	inputEntryFluid.appendChild(option);
 }
 
-function normalizeEntryAmount() {
+/**
+ * @desc checks whether the entry amount is valid. if it is not, it focuses that
+ * input and disables the add entry button
+ * @returns {boolean} whether that value is valid
+ */
+function checkEntryAmount() {
 	const amount = Number(inputEntryAmount.value);
 
 	buttonEntryAdd.disabled = true;
@@ -135,12 +149,28 @@ function normalizeEntryAmount() {
 		buttonEntryAdd.disabled = false;
 	else
 		inputEntryAmount.focus();
-}
-inputEntryAmount.addEventListener("input", normalizeEntryAmount);
-buttonEntryAdd.addEventListener("click", () => {
-	normalizeEntryAmount();
 
-	console.warn("TODO: make entry work");
+	return !buttonEntryAdd.disabled;
+}
+inputEntryAmount.addEventListener("input", checkEntryAmount);
+buttonEntryAdd.addEventListener("click", () => {
+	if (!checkEntryAmount())
+		return;
+
+	const amount = Number(inputEntryAmount.value);
+	const fluid = Fluid.shown[inputEntryFluid.value];
+
+	inputEntryAmount.value = "0";
+	inputEntryFluid.value = "0";
+
+	console.error("TODO: make entry work uwu");
+	activatePane(paneLog);
+});
+buttonEntryCancel.addEventListener("click", () => {
+	inputEntryAmount.value = "0";
+	inputEntryFluid.value = "0";
+
+	activatePane(paneLog);
 });
 
 //#endregion

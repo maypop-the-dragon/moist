@@ -6,6 +6,7 @@ html {
 body {
 	background-color: #000;
 	color: #FEE;
+	user-select: none;
 }
 
 /* #region Pane System */
@@ -23,7 +24,7 @@ body {
 	display: flex;
 }
 
-@media (min-width: 36em) and (min-height: 20em) {
+@media (min-width: 36rem) and (min-height: 20rem) {
 	.subpane {
 		display: flex;
 

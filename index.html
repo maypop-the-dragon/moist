@@ -13,13 +13,17 @@
 		<title>achieve moist™</title>
 		<link rel="stylesheet" href="style.css">
 		<script defer src="classes.js"></script>
-		<script defer src="functionality.js"></script>
 		<script defer src="stuff.js"></script>
+		<script defer src="functionality.js"></script>
 	</head>
 	<body>
 		<div id="pane-main" class="pane">
 			<div id="column-log-entry">
 				<div id="pane-log" class="subpane">
+					<button id="button-log-add" title="add an entry">
+						<img alt="add" src="gfx/log-add.svg" width="12">
+					</button>
+					<table id="content-log"></table>
 				</div>
 				<div id="pane-entry" class="subpane">
 					<div>
@@ -56,7 +60,20 @@
 						</button>
 					</div>
 				</div>
-				<div id="content-calendar"></div>
+				<table>
+					<thead>
+						<tr>
+							<th>Mn</th>
+							<th>Tu</th>
+							<th>We</th>
+							<th>Th</th>
+							<th>Fr</th>
+							<th>St</th>
+							<th>Sn</th>
+						</tr>
+					</thead>
+					<tbody id="content-calendar"></tbody>
+				</table>
 			</div>
 		</div>
 		<div id="pane-prefs" class="pane">Preferences</div>
