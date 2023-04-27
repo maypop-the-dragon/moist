@@ -18,6 +18,7 @@ const paneLog = gel("pane-log");
 const buttonLogAdd = gel("button-log-add");
 
 const panePrefs = gel("pane-prefs");
+const buttonPrefsOpen = gel("button-log-prefs");
 
 //#endregion Elements
 //#region Utilities and Variables
@@ -122,6 +123,10 @@ const prefs = {
 buttonLogAdd.addEventListener("click", () => {
 	activatePane(paneEntry);
 	inputEntryAmount.focus();
+});
+buttonPrefsOpen.addEventListener("click", () => {
+	activatePane(panePrefs);
+	this.blur();
 });
 
 //#endregion

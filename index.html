@@ -18,12 +18,17 @@
 	</head>
 	<body>
 		<div id="pane-main" class="pane">
-			<div id="column-log-entry">
+			<div id="column-entry-log">
 				<div id="pane-log" class="subpane">
+					<button id="button-log-prefs" title="open preferences">
+						<img alt="config" src="gfx/prefs-open.svg" width="12">
+					</button>
 					<button id="button-log-add" title="add an entry">
 						<img alt="add" src="gfx/log-add.svg" width="12">
 					</button>
-					<table id="content-log"></table>
+					<div id="container-log-content">
+						<table id="content-log"></table>
+					</div>
 				</div>
 				<div id="pane-entry" class="subpane">
 					<div>
@@ -63,13 +68,13 @@
 				<table>
 					<thead>
 						<tr>
+							<th>Sn</th>
 							<th>Mn</th>
 							<th>Tu</th>
 							<th>We</th>
 							<th>Th</th>
 							<th>Fr</th>
 							<th>St</th>
-							<th>Sn</th>
 						</tr>
 					</thead>
 					<tbody id="content-calendar"></tbody>
