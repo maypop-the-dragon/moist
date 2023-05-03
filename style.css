@@ -45,3 +45,7 @@ body {
 }
 
 /* #endregion */
+
+#table-calendar td {
+	border: 1px solid;
+}

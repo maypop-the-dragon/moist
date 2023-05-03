@@ -391,3 +391,96 @@ class DailyLog {
 		this.goal = Math.max(0, Math.min(6553.5, Math.round((Number(goal) || 0) * 10) / 10));
 	}
 };
+
+/**
+ * @desc the class to represent months. making this was AWFUL. i hate dates in
+ * general and the JavaScript `Date` api is even worse!
+ */
+class Month {
+	/** @desc the year number, to account for leap years @type {number} */
+	year = 0;
+	/** @desc the month number, starting at 1 for january @type {number} */
+	month = 0;
+
+	/**
+	 * @desc gets the number of days in this month
+	 * @returns {number} the number of days in this month
+	 */
+	getNumberOfDays() {
+		return new Date(this.year, this.month, 0).getDate();
+	}
+
+	/**
+	 * @desc gets the key to use in `localStorage` for a particular day's data
+	 *
+	 * (ha, "dayta..." that's not funny.)
+	 * @param {number} day the day, starting at 1
+	 * @returns {number} the storage key for that day
+	 */
+	getStorageKeyForDay(day) {
+		return "moist"
+			+ String(this.year)
+			+ String(this.month).padStart(2, "0")
+			+ String(day).padStart(2, "0");
+	}
+
+	/**
+	 * @desc generates an html element for this month's calendar body
+	 * @returns {HTMLTableSectionElement} the calendar page for this month
+	 */
+	generateCalendarPage() {
+		const NOW = new Date;
+		const SAME_MONTH = NOW.getFullYear() === this.year && NOW.getMonth() + 1 === this.month;
+		const DAYS = this.getNumberOfDays();
+		const body = document.createElement("TBODY");
+
+		let row = document.createElement("TR");
+
+		{
+			// Create empty elements to pad out the calendar until the first
+			// actual day so that the weekdays at the top are correct.
+			const weekdays = new Date(this.year, this.month - 1, 1).getDay();
+			for (let i = 0; i < weekdays; ++i)
+				row.appendChild(document.createElement("TD"));
+		}
+
+		for (let i = 1; i <= DAYS; ++i) {
+			const data = localStorage.getItem(this.getStorageKeyForDay(i));
+			const td = document.createElement("TD");
+
+			let button = document.createElement("BUTTON");
+			if (SAME_MONTH && NOW.getDate() === i) {
+				button.className = "today";
+				td.appendChild(button);
+			} else if (data !== null) {
+				td.appendChild(button);
+			}
+
+			if (button.parentElement) {
+				button.innerText = i;
+				button.onclick = () => console.log("UGH. you clicked it");
+			}
+
+			row.appendChild(td);
+			if (row.children.length === 7) {
+				body.appendChild(row);
+				row = document.createElement("TR");
+			}
+		}
+
+		if (row.children.length && !row.parentElement)
+			body.appendChild(row);
+
+		return body;
+	}
+
+	/**
+	 * @desc a month of daily logs
+	 * @param {number} year the year, to account for leap years
+	 * @param {number} month the month, starting at 1 for january
+	 */
+	constructor(year, month) {
+		this.year = year;
+		this.month = month;
+	}
+};
