@@ -2,10 +2,18 @@
 
 //#region Elements
 
-/** @desc Short for "get element", because I don't want to write `document.getElementById`. */
+/**
+ * @desc short for "get element", because I don't want to write `document.getElementById`
+ * @type {function(string): Element}
+ * */
 const gel = document.getElementById.bind(document);
 
 const paneCalendar = gel("pane-calendar");
+const tableCalendar = gel("table-calendar");
+const buttonCalendarBack = gel("button-calendar-back");
+const buttonCalendarNext = gel("button-calendar-next");
+const buttonCalendarNow = gel("button-calendar-now");
+const textCalendarMonth = gel("text-calendar-month");
 
 const paneEntry = gel("pane-entry");
 const inputEntryAmount = gel("input-entry-amount");
@@ -116,6 +124,41 @@ const prefs = {
 		return this;
 	}
 };
+
+//#endregion
+//#region Calendar Pane
+
+function calendarClickEvent(event) {
+	console.log(`Unfortunately, I haven't done that yet.
+Key: ${this.moistKey}, Data; ${this.moistData}`);
+}
+
+function populateCalendar() {
+	if (calendarBody !== null)
+		calendarBody.remove();
+	calendarBody = tableCalendar.appendChild(activeMonth.generateCalendarPage(calendarClickEvent));
+	textCalendarMonth.innerText = activeMonth.toString();
+}
+
+let activeMonth = new Month(new Date().getFullYear(), new Date().getMonth() + 1);
+let calendarBody = null;
+populateCalendar();
+
+buttonCalendarBack.addEventListener("click", function(event) {
+	activeMonth = activeMonth.previous();
+	populateCalendar();
+});
+buttonCalendarNext.addEventListener("click", function(event) {
+	if (activeMonth.month === new Date().getMonth() + 1 && activeMonth.year === new Date().getFullYear())
+		return;
+
+	activeMonth = activeMonth.next();
+	populateCalendar();
+});
+buttonCalendarNow.addEventListener("click", function(event) {
+	activeMonth = new Month(new Date().getFullYear(), new Date().getMonth() + 1);
+	populateCalendar();
+});
 
 //#endregion
 //#region Log Pane

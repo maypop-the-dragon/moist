@@ -403,6 +403,28 @@ class Month {
 	month = 0;
 
 	/**
+	 * @desc gets the next month from this one
+	 * @returns {Month} the next month
+	 */
+	next() {
+		return new Month(
+			this.year + (this.month > 11),
+			this.month > 11 ? 1 : this.month + 1
+		);
+	}
+
+	/**
+	 * @desc gets the previous month from this one
+	 * @returns {Month} the previous month
+	 */
+	previous() {
+		return new Month(
+			this.year - (this.month < 2),
+			this.month < 2 ? 12 : this.month - 1
+		);
+	}
+
+	/**
 	 * @desc gets the number of days in this month
 	 * @returns {number} the number of days in this month
 	 */
@@ -418,17 +440,41 @@ class Month {
 	 * @returns {number} the storage key for that day
 	 */
 	getStorageKeyForDay(day) {
-		return "moist"
+		return "moist:"
 			+ String(this.year)
 			+ String(this.month).padStart(2, "0")
 			+ String(day).padStart(2, "0");
 	}
 
 	/**
+	 * @desc get the month and year as a string
+	 */
+	toString() {
+		const NAMES = [
+			"January",
+			"February",
+			"March",
+			"April",
+			"May",
+			"June",
+			"July",
+			"August",
+			"September",
+			"October",
+			"November",
+			"December"
+		];
+
+		return (NAMES[this.month - 1] ?? "Junetembruary") + " '"
+			+ (this.year % 100).toString().padStart(2, "0")
+	}
+
+	/**
 	 * @desc generates an html element for this month's calendar body
+	 * @param {Function} opener the function to bind to each button's *click* event
 	 * @returns {HTMLTableSectionElement} the calendar page for this month
 	 */
-	generateCalendarPage() {
+	generateCalendarPage(opener = Function.prototype) {
 		const NOW = new Date;
 		const SAME_MONTH = NOW.getFullYear() === this.year && NOW.getMonth() + 1 === this.month;
 		const DAYS = this.getNumberOfDays();
@@ -445,20 +491,23 @@ class Month {
 		}
 
 		for (let i = 1; i <= DAYS; ++i) {
-			const data = localStorage.getItem(this.getStorageKeyForDay(i));
+			const KEY = this.getStorageKeyForDay(i);
+			const DATA = localStorage.getItem(KEY);
 			const td = document.createElement("TD");
 
 			let button = document.createElement("BUTTON");
 			if (SAME_MONTH && NOW.getDate() === i) {
 				button.className = "today";
 				td.appendChild(button);
-			} else if (data !== null) {
+			} else if (DATA !== null) {
 				td.appendChild(button);
 			}
 
 			if (button.parentElement) {
+				button.moistKey = KEY;
+				button.moistData = DATA;
 				button.innerText = i;
-				button.onclick = () => console.log("UGH. you clicked it");
+				button.addEventListener("click", opener);
 			}
 
 			row.appendChild(td);
